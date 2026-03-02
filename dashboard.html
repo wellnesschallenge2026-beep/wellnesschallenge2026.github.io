@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard — Wyndham Hua Hin Wellness Challenge 2026</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+    <!-- ── NAVBAR ─────────────────────────────────────────────── -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <div class="navbar-logo">
+                <img src="assets/icons/MainLogo.png" class="logo-img" alt="Wyndham Logo"
+                    style="height:32px;margin-right:8px;">
+                <span>Wyndham Hua Hin Wellness Challenge 2026</span>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="dashboard.html" class="active" data-i18n="nav_dashboard">หน้าหลัก</a></li>
+                <li><a href="profile.html" data-i18n="nav_profile">โปรไฟล์</a></li>
+                <li><a href="ranking.html" data-i18n="nav_ranking">อันดับ</a></li>
+            </ul>
+            <div class="navbar-right">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" data-lang="th">ไทย</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <div class="user-avatar" id="userAvatarNavBtn" title="Profile" style="cursor:pointer;"
+                    onclick="window.location='profile.html'">
+                    <span id="navAvatarInitial"></span>
+                    <img id="navAvatarImg" src="" alt="" style="display:none;" />
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="AUTH.logout()"
+                    data-i18n="nav_logout">ออกจากระบบ</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── HERO BANNER ────────────────────────────────────────── -->
+    <div class="page-hero">
+        <div class="container hero-container">
+            <div class="hero-info">
+                <h1><span data-i18n="dash_welcome">สวัสดี</span>&nbsp;<span id="heroUserName"></span>! 👋</h1>
+                <p data-i18n="dash_subtitle">เลือกกิจกรรมที่คุณทำวันนี้</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MOBILE NAV ─────────────────────────────────────────── -->
+    <nav class="mobile-nav">
+        <a href="dashboard.html" class="active">
+            <span class="nav-icon">🏠</span>
+            <span data-i18n="nav_dashboard">หน้าหลัก</span>
+        </a>
+        <a href="profile.html">
+            <span class="nav-icon">👤</span>
+            <span data-i18n="nav_profile">โปรไฟล์</span>
+        </a>
+        <a href="ranking.html">
+            <span class="nav-icon">🏆</span>
+            <span data-i18n="nav_ranking">อันดับ</span>
+        </a>
+        <a href="#" onclick="AUTH.logout()" style="color:var(--danger);">
+            <span class="nav-icon">🚪</span>
+            <span data-i18n="nav_logout">ออกระบบ</span>
+        </a>
+    </nav>
+
+    <!-- ── MAIN CONTENT ───────────────────────────────────────── -->
+    <main class="container section">
+
+        <!-- Weekly Progress mini-bar -->
+        <div class="card mb-4" id="weeklyProgressCard">
+            <div class="flex justify-between items-center mb-2">
+                <h3 style="font-size:1rem;" data-i18n="dash_progress">ความคืบหน้าสัปดาห์นี้</h3>
+                <span id="weeklyCount" class="badge badge-primary">0 กิจกรรม</span>
+            </div>
+            <div class="progress-wrap">
+                <div class="progress-bar" id="weeklyProgressBar" style="width:0%"></div>
+            </div>
+        </div>
+
+        <!-- Activity Cards Grid -->
+        <div class="activity-grid" id="activityGrid">
+
+            <!-- 1. No Fry -->
+            <div class="activity-card card-hover" onclick="openModal('no_fry')">
+                <div class="activity-icon">🥗</div>
+                <div>
+                    <div class="activity-title" data-i18n="act_no_fry">No Fry, Let's Try!</div>
+                    <div class="activity-desc mt-1" data-i18n="act_no_fry_desc">ไม่ทานอาหารทอด ทางเลือกสุขภาพ (3
+                        วัน/สัปดาห์)</div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="activity-badge">🥗 3 วัน/สัปดาห์</span>
+                    <button class="btn btn-primary btn-sm" data-i18n="dash_log_btn">บันทึก</button>
+                </div>
+            </div>
+
+            <!-- 2. Running & Walking -->
+            <div class="activity-card card-hover" onclick="openModal('running')">
+                <div class="activity-icon">🏃</div>
+                <div>
+                    <div class="activity-title" data-i18n="act_running">Running &amp; Walking</div>
+                    <div class="activity-desc mt-1" data-i18n="act_running_desc">วิ่ง 10 km/สัปดาห์ หรือ เดิน 15
+                        km/สัปดาห์ (3 ครั้ง/สัปดาห์)</div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="activity-badge">🏃 3 ครั้ง/สัปดาห์</span>
+                    <button class="btn btn-primary btn-sm" data-i18n="dash_log_btn">บันทึก</button>
+                </div>
+            </div>
+
+            <!-- 3. Step Count -->
+            <div class="activity-card card-hover" onclick="openModal('steps')">
+                <div class="activity-icon">👟</div>
+                <div>
+                    <div class="activity-title" data-i18n="act_steps">Step Count</div>
+                    <div class="activity-desc mt-1" data-i18n="act_steps_desc">Office 5,000 ก้าว / Operation 10,000
+                        ก้าวต่อวัน (4 ครั้ง/สัปดาห์)</div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="activity-badge">👟 4 วัน/สัปดาห์</span>
+                    <button class="btn btn-primary btn-sm" data-i18n="dash_log_btn">บันทึก</button>
+                </div>
+            </div>
+
+            <!-- 4. Yoga & Aerobic -->
+            <div class="activity-card card-hover" onclick="openModal('yoga')">
+                <div class="activity-icon">🧘</div>
+                <div>
+                    <div class="activity-title" data-i18n="act_yoga">Yoga &amp; Aerobic</div>
+                    <div class="activity-desc mt-1" data-i18n="act_yoga_desc">28 sessions หรือ 80% การเข้าร่วม</div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="activity-badge">🧘 26 Sessions</span>
+                    <button class="btn btn-primary btn-sm" data-i18n="dash_log_btn">บันทึก</button>
+                </div>
+            </div>
+
+            <!-- 5. Football -->
+            <div class="activity-card card-hover" onclick="openModal('football')">
+                <div class="activity-icon">⚽</div>
+                <div>
+                    <div class="activity-title" data-i18n="act_football">Football</div>
+                    <div class="activity-desc mt-1" data-i18n="act_football_desc">เล่นบอล 3 วัน/สัปดาห์</div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="activity-badge">⚽ 3 วัน/สัปดาห์</span>
+                    <button class="btn btn-primary btn-sm" data-i18n="dash_log_btn">บันทึก</button>
+                </div>
+            </div>
+
+            <!-- 6. Your Design -->
+            <div class="activity-card card-hover" onclick="openModal('my_design')">
+                <div class="activity-icon">✨</div>
+                <div>
+                    <div class="activity-title" data-i18n="act_my_design">Your Design</div>
+                    <div class="activity-desc mt-1" data-i18n="act_my_design_desc">ตั้ง Challenge เองตามสไตล์ของคุณ
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="activity-badge">✨ ตามเป้าหมาย</span>
+                    <button class="btn btn-primary btn-sm" data-i18n="dash_log_btn">บันทึก</button>
+                </div>
+            </div>
+
+        </div><!-- /activity-grid -->
+    </main>
+
+    <!-- ══════════════════════════════════════════════════════════
+     ACTIVITY LOG MODAL
+═══════════════════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="activityModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">
+                    <span id="modalIcon"></span>
+                    <span id="modalTitleText"></span>
+                </div>
+                <button class="btn-close" onclick="closeModal()">✕</button>
+            </div>
+            <form id="activityForm" novalidate>
+                <div class="modal-body" id="modalBody">
+                    <!-- Dynamic fields injected by JS -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeModal()"
+                        data-i18n="form_cancel">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span id="submitBtnText" data-i18n="form_submit">บันทึก</span>
+                        <span id="submitSpinner" class="spinner hidden"
+                            style="width:16px;height:16px;border-width:2px;border-color:rgba(255,255,255,0.3);border-top-color:white;"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        // ── Auth guard ──────────────────────────────────────────
+        const currentUser = AUTH.requireAuth();
+        if (!currentUser) throw new Error("Not authenticated");
+
+        // ── Populate navbar ─────────────────────────────────────
+        document.getElementById("heroUserName").textContent = currentUser.fullName || currentUser.username;
+        document.getElementById("navAvatarInitial").textContent = (currentUser.fullName || currentUser.username)[0].toUpperCase();
+        if (currentUser.profilePicUrl) {
+            const img = document.getElementById("navAvatarImg");
+            img.src = currentUser.profilePicUrl;
+            img.style.display = "block";
+            document.getElementById("navAvatarInitial").style.display = "none";
+        }
+
+        // ── Activity definitions ────────────────────────────────
+        const ACTIVITIES = {
+            no_fry: {
+                icon: "🥗",
+                titleKey: "act_no_fry",
+                fields: () => `
+        ${dateField()} ${noteField()}
+        ${photoField()}
+      `,
+            },
+            running: {
+                icon: "🏃",
+                titleKey: "act_running",
+                fields: () => `
+        ${dateField()} ${timeField()}
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_type">ประเภท</label>
+          <select class="form-select" name="type" required>
+            <option value="run" data-i18n="form_run">วิ่ง</option>
+            <option value="walk" data-i18n="form_walk">เดิน</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_distance">ระยะทาง (km)</label>
+          <input class="form-input" type="number" name="distance" step="0.01" min="0.1" placeholder="0.00" required />
+        </div>
+        ${locationField()} ${photoField()}
+      `,
+            },
+            steps: {
+                icon: "👟",
+                titleKey: "act_steps",
+                fields: () => `
+        ${dateField()}
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_employee">ประเภทพนักงาน</label>
+          <select class="form-select" name="employeeType" required>
+            <option value="office" ${currentUser.employeeType === 'office' ? 'selected' : ''} data-i18n="form_office">Office (เป้า: 5,000 ก้าว)</option>
+            <option value="operation" ${currentUser.employeeType === 'operation' ? 'selected' : ''} data-i18n="form_operation">Operation (เป้า: 10,000 ก้าว)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_steps">จำนวนก้าว</label>
+          <input class="form-input" type="number" name="steps" min="1" placeholder="0" required />
+        </div>
+        ${photoField()}
+      `,
+            },
+            yoga: {
+                icon: "🧘",
+                titleKey: "act_yoga",
+                fields: () => `
+        ${dateField()} ${timeField()}
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_type">ประเภท</label>
+          <select class="form-select" name="type" required>
+            <option value="yoga" data-i18n="form_yoga">Yoga</option>
+            <option value="aerobic" data-i18n="form_aerobic">Aerobic</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
+          <input class="form-input" type="number" name="duration" min="1" placeholder="นาที" required />
+        </div>
+        ${photoField()}
+      `,
+            },
+            football: {
+                icon: "⚽",
+                titleKey: "act_football",
+                fields: () => `
+        ${dateField()} ${timeField()}
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
+          <input class="form-input" type="number" name="duration" min="1" placeholder="นาที" required />
+        </div>
+        ${locationField()} ${photoField()}
+      `,
+            },
+            my_design: {
+                icon: "✨",
+                titleKey: "act_my_design",
+                fields: () => `
+        ${dateField()}
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_sub_act">เลือกกิจกรรม</label>
+          <select class="form-select" name="challengeName" id="subActivitySelect" required onchange="handleSubActivityChange(this.value)">
+            <option value="" disabled selected data-i18n="form_sub_act">เลือกกิจกรรม</option>
+            <option value="Tennis" data-i18n="sub_tennis">เทนนิส</option>
+            <option value="Jump Rope" data-i18n="sub_jump_rope">กระโดดเชือก 250 ครั้ง</option>
+            <option value="Walking Fishing" data-i18n="sub_fishing_walk">เดินตกปลาอย่างน้อย 5 ก.ม. ต่อครั้ง</option>
+            <option value="Weight Training" data-i18n="sub_weight_training">Weight Training</option>
+            <option value="Less Meat" data-i18n="sub_less_meat">Less Meat</option>
+            <option value="Low Carb" data-i18n="sub_low_carb">Low Carb</option>
+          </select>
+        </div>
+        <div id="subActivityFields"></div>
+        ${photoField()}
+      `,
+            },
+        };
+
+        // Field templates
+        function dateField() {
+            const today = new Date().toISOString().split("T")[0];
+            return `<div class="form-group">
+      <label class="form-label" data-i18n="form_date">วันที่</label>
+      <input class="form-input" type="date" name="date" value="${today}" required />
+    </div>`;
+        }
+        function timeField() {
+            const now = new Date().toTimeString().slice(0, 5);
+            return `<div class="form-group">
+      <label class="form-label" data-i18n="form_time">เวลา</label>
+      <input class="form-input" type="time" name="time" value="${now}" />
+    </div>`;
+        }
+        function locationField() {
+            return `<div class="form-group">
+      <label class="form-label" data-i18n="form_location">สถานที่</label>
+      <input class="form-input" type="text" name="location" data-i18n="form_location" placeholder="สถานที่" />
+    </div>`;
+        }
+        function noteField() {
+            return `<div class="form-group">
+      <label class="form-label" data-i18n="form_note">หมายเหตุ</label>
+      <input class="form-input" type="text" name="note" data-i18n="form_note" placeholder="หมายเหตุ (ไม่จำเป็น)" />
+    </div>`;
+        }
+        function photoField() {
+            return `<div class="form-group">
+      <label class="form-label" data-i18n="form_photo">อัพโหลดหลักฐาน</label>
+      <div class="file-upload-area" id="uploadArea" onclick="document.getElementById('photoInput').click()">
+        <div id="uploadPrompt">
+          <div style="font-size:2rem;">📸</div>
+          <div class="text-muted text-sm mt-1">คลิกหรือลากรูปมาวาง</div>
+        </div>
+        <img id="photoPreview" class="file-preview" style="display:none;" alt="Preview" />
+        <input type="file" id="photoInput" accept="image/*" />
+      </div>
+    </div>`;
+        }
+
+        // ── Modal logic ─────────────────────────────────────────
+        let currentActivity = null;
+        let selectedPhotoFile = null;
+
+        function openModal(actType) {
+            currentActivity = actType;
+            selectedPhotoFile = null;
+            const def = ACTIVITIES[actType];
+            document.getElementById("modalIcon").textContent = def.icon;
+            document.getElementById("modalTitleText").textContent = t(def.titleKey);
+            document.getElementById("modalBody").innerHTML = def.fields();
+            document.getElementById("activityModal").classList.add("open");
+            applyLang();
+            // Re-bind file upload for the new photoField
+            initFileUpload();
+        }
+
+        function handleSubActivityChange(val) {
+            const container = document.getElementById("subActivityFields");
+            if (!container) return;
+
+            let html = "";
+            if (["Tennis", "Jump Rope", "Weight Training"].includes(val)) {
+                html = `
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
+                        <input class="form-input" type="number" name="duration" min="1" placeholder="นาที" required />
+                    </div>
+                `;
+            } else if (val === "Walking Fishing") {
+                html = `
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_distance">ระยะทาง (km)</label>
+                        <input class="form-input" type="number" name="distance" step="0.1" min="0.1" placeholder="0.0" required />
+                    </div>
+                `;
+            } else if (["Less Meat", "Low Carb"].includes(val)) {
+                html = `
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_note">ชื่อเมนู</label>
+                        <input class="form-input" type="text" name="note" data-i18n="form_note" placeholder="ชื่อเมนู" required />
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            applyLang();
+        }
+
+        function initFileUpload() {
+            const input = document.getElementById("photoInput");
+            const area = document.getElementById("uploadArea");
+            const preview = document.getElementById("photoPreview");
+            const prompt = document.getElementById("uploadPrompt");
+
+            if (input) {
+                input.addEventListener("change", () => {
+                    if (input.files[0]) handlePhoto(input.files[0]);
+                });
+            }
+            if (area) {
+                area.addEventListener("dragover", e => { e.preventDefault(); area.classList.add("dragover"); });
+                area.addEventListener("dragleave", () => area.classList.remove("dragover"));
+                area.addEventListener("drop", e => {
+                    e.preventDefault();
+                    area.classList.remove("dragover");
+                    if (e.dataTransfer.files[0]) handlePhoto(e.dataTransfer.files[0]);
+                });
+            }
+
+            function handlePhoto(file) {
+                if (!file.type.startsWith("image/")) return;
+                selectedPhotoFile = file;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    preview.src = ev.target.result;
+                    preview.style.display = "block";
+                    prompt.style.display = "none";
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById("activityModal").classList.remove("open");
+            document.getElementById("activityForm").reset();
+            currentActivity = null;
+            selectedPhotoFile = null;
+        }
+
+        // Close on overlay click
+        document.getElementById("activityModal").addEventListener("click", function (e) {
+            if (e.target === this) closeModal();
+        });
+
+        // ── Form submit ─────────────────────────────────────────
+        document.getElementById("activityForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("submitBtn");
+            const spinner = document.getElementById("submitSpinner");
+            const btnText = document.getElementById("submitBtnText");
+
+            btn.disabled = true;
+            spinner.classList.remove("hidden");
+            btnText.classList.add("hidden");
+
+            try {
+                // Gather form data
+                const fd = new FormData(e.target);
+                const details = {};
+                for (const [key, val] of fd.entries()) details[key] = val;
+
+                // Upload photo if any
+                let evidenceFileId = "";
+                if (selectedPhotoFile) {
+                    btnText.textContent = t("form_uploading");
+                    btnText.classList.remove("hidden");
+                    const { base64, mimeType } = await API.fileToBase64(selectedPhotoFile);
+                    const upRes = await API.uploadImage(base64, mimeType, "evidence");
+                    if (upRes.success) evidenceFileId = upRes.fileId;
+                }
+
+                // Log activity
+                const res = await API.logActivity({
+                    userId: currentUser.userId,
+                    activityType: currentActivity,
+                    date: details.date || new Date().toISOString().split("T")[0],
+                    details: JSON.stringify(details),
+                    evidenceFileId,
+                });
+
+                if (res.success) {
+                    closeModal();
+                    showToast(t("form_success"), "success");
+                    loadWeeklyProgress();
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(t("form_error"), "error");
+            } finally {
+                btn.disabled = false;
+                spinner.classList.add("hidden");
+                btnText.classList.remove("hidden");
+                btnText.textContent = t("form_submit");
+            }
+        });
+
+        // ── Toast helper ────────────────────────────────────────
+        function showToast(msg, type = "info") {
+            const icons = { success: "✅", error: "❌", info: "ℹ️" };
+            const el = document.createElement("div");
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<span class="toast-icon">${icons[type] || "ℹ️"}</span><span class="toast-msg">${msg}</span>`;
+            document.getElementById("toastContainer").prepend(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+
+        // ── Weekly progress ─────────────────────────────────────
+        async function loadWeeklyProgress() {
+            try {
+                const res = await API.getActivities(currentUser.userId);
+                if (!res.success) return;
+                const now = new Date();
+                const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+                const weekLogs = (res.logs || []).filter(l => new Date(l.date) >= weekAgo);
+                const count = weekLogs.length;
+                document.getElementById("weeklyCount").textContent = count + " " + (currentLang === "th" ? "กิจกรรม" : "activities");
+                const pct = Math.min(100, (count / 14) * 100); // target ~2/day
+                document.getElementById("weeklyProgressBar").style.width = pct + "%";
+            } catch { /* silent */ }
+        }
+
+        // Init
+        loadWeeklyProgress();
+    </script>
+</body>
+
+</html>

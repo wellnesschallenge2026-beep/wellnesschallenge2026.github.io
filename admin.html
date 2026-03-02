@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Wyndham Hua Hin Wellness Challenge 2026</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <div class="navbar-logo">
+                <img src="assets/icons/MainLogo.png" class="logo-img" alt="Wyndham Logo"
+                    style="height:32px;margin-right:8px;">
+                <span>Wyndham Hua Hin Wellness Challenge 2026 · <span
+                        style="color:#e8f4fd;font-size:0.85em;">Admin</span></span>
+            </div>
+            <div class="navbar-right">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" data-lang="th">ไทย</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="AUTH.logout()"
+                    data-i18n="nav_logout">ออกจากระบบ</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── MOBILE NAV (ADMIN) ─────────────────────────────────── -->
+    <nav class="mobile-nav">
+        <a href="#overview" class="active" onclick="showSection('overview',this)">
+            <span class="nav-icon">📊</span>
+            <span data-i18n="admin_overview">ภาพรวม</span>
+        </a>
+        <a href="#users" onclick="showSection('users',this)">
+            <span class="nav-icon">👥</span>
+            <span data-i18n="admin_users">ผู้ใช้</span>
+        </a>
+        <a href="#ranking" onclick="showSection('ranking',this)">
+            <span class="nav-icon">🏆</span>
+            <span data-i18n="nav_ranking">อันดับ</span>
+        </a>
+        <a href="#" onclick="AUTH.logout()" style="color:var(--danger);">
+            <span class="nav-icon">🚪</span>
+            <span data-i18n="nav_logout">ออกระบบ</span>
+        </a>
+    </nav>
+
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <ul class="sidebar-nav">
+                <li><a href="#overview" class="active" onclick="showSection('overview',this)">📊 <span
+                            data-i18n="admin_overview">ภาพรวม</span></a></li>
+                <li><a href="#users" onclick="showSection('users',this)">👥 <span
+                            data-i18n="admin_users">ผู้ใช้งานทั้งหมด</span></a></li>
+                <li><a href="#ranking" onclick="showSection('ranking',this)">🏆 <span
+                            data-i18n="nav_ranking">อันดับ</span></a></li>
+            </ul>
+        </aside>
+
+        <!-- MAIN -->
+        <main class="admin-main">
+
+            <!-- ── OVERVIEW SECTION ─────────────────────────────── -->
+            <section id="sec-overview">
+                <h2 class="mb-3" data-i18n="admin_overview">ภาพรวม</h2>
+                <div class="stats-grid mb-4">
+                    <div class="stat-card">
+                        <div class="stat-value" id="ovTotalUsers">—</div>
+                        <div class="stat-label" data-i18n="admin_total_users">ผู้ใช้ทั้งหมด</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="ovWeekLogs">—</div>
+                        <div class="stat-label" data-i18n="admin_total_logs">บันทึกสัปดาห์นี้</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="ovTopUser" style="font-size:1.1rem;"></div>
+                        <div class="stat-label" data-i18n="admin_most_active">ผู้ใช้ที่ active มากสุด</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="font-size:1rem;margin-bottom:1rem;" data-i18n="admin_chart_dist">Activity
+                        Distribution</h3>
+                    <div style="height:160px;position:relative;width:100%;">
+                        <canvas id="ovActChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ── USERS SECTION ────────────────────────────────── -->
+            <section id="sec-users" class="hidden">
+                <div class="flex justify-between items-center mb-4" style="flex-wrap:wrap;gap:1rem;">
+                    <h2 data-i18n="admin_users">ผู้ใช้งานทั้งหมด</h2>
+                    <div class="flex gap-2">
+                        <input class="form-input" type="text" id="searchInput" data-i18n="admin_search"
+                            placeholder="ค้นหาผู้ใช้..." style="max-width:220px;" />
+                        <button class="btn btn-primary" onclick="openAddUserModal()">+ <span
+                                data-i18n="admin_add_user">เพิ่มผู้ใช้</span></button>
+                    </div>
+                </div>
+                <div class="grid-4" id="userGrid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));">
+                    <div class="text-center text-muted" data-i18n="gen_loading">กำลังโหลด...</div>
+            </section>
+
+            <!-- ── RANKING SECTION ────────────────────────────────── -->
+            <section id="sec-ranking" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 data-i18n="nav_ranking">อันดับ</h2>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width:60px;" data-i18n="rank_rank">อันดับ</th>
+                                    <th data-i18n="rank_name">ชื่อ</th>
+                                    <th class="text-right" data-i18n="rank_activities">กิจกรรม</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRankingBody">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted" data-i18n="gen_loading">กำลังโหลด...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- ── ADD/EDIT USER MODAL ─────────────────────────────────── -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="userModalTitle">เพิ่มผู้ใช้</div>
+                <button class="btn-close" onclick="closeUserModal()">✕</button>
+            </div>
+            <form id="userForm" novalidate>
+                <div class="modal-body">
+                    <input type="hidden" id="editUserId" />
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_fullname">ชื่อ-นามสกุล</label>
+                        <input class="form-input" type="text" id="uf_fullname" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_username">ชื่อผู้ใช้</label>
+                        <input class="form-input" type="text" id="uf_username" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_password">รหัสผ่าน</label>
+                        <input class="form-input" type="text" id="uf_password"
+                            placeholder="เว้นว่างถ้าไม่ต้องการเปลี่ยน" />
+                        <div class="text-xs mt-1" style="color:var(--danger);" data-i18n="form_pass_hint_alpha"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_emp_type">ประเภทพนักงาน</label>
+                        <select class="form-select" id="uf_empType">
+                            <option value="office" data-i18n="form_office">Office</option>
+                            <option value="operation" data-i18n="form_operation">Operation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_role">สิทธิ์</label>
+                        <select class="form-select" id="uf_role">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeUserModal()"
+                        data-i18n="admin_cancel">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="admin_save">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        AUTH.requireAdmin();
+
+        let allUsers = [];
+        let allLogs = [];
+
+        // ── Section navigation ──────────────────────────────────
+        function showSection(name, el) {
+            document.querySelectorAll('[id^="sec-"]').forEach(s => s.classList.add("hidden"));
+            document.getElementById("sec-" + name).classList.remove("hidden");
+            // Highlight Desktop
+            document.querySelectorAll(".sidebar-nav a").forEach(a => a.classList.remove("active"));
+            // Highlight Mobile
+            document.querySelectorAll(".mobile-nav a").forEach(a => {
+                if (a.getAttribute("onclick") && !a.getAttribute("onclick").includes("logout")) a.classList.remove("active");
+            });
+            if (el) el.classList.add("active");
+        }
+
+        // ── Load all data ───────────────────────────────────────
+        async function loadAll() {
+            try {
+                const [ur, lr] = await Promise.all([API.getUsers(), API.getAllActivities()]);
+                allUsers = ur.success ? ur.users : [];
+                allLogs = lr.success ? lr.logs : [];
+
+                renderOverview();
+                renderUserGrid(allUsers);
+                renderRanking();
+            } catch (e) { console.error(e); }
+        }
+
+        // ── Overview ────────────────────────────────────────────
+        function renderOverview() {
+            const now = new Date();
+            const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekLogs = allLogs.filter(l => new Date(l.date) >= weekAgo);
+
+            document.getElementById("ovTotalUsers").textContent = allUsers.filter(u => u.role !== "admin").length;
+            document.getElementById("ovWeekLogs").textContent = weekLogs.length;
+
+            // Top user
+            const scoreMap = {};
+            allLogs.forEach(l => { scoreMap[l.userId] = (scoreMap[l.userId] || 0) + 1; });
+            const topId = Object.entries(scoreMap).sort((a, b) => b[1] - a[1])[0]?.[0];
+            const topUser = allUsers.find(u => u.userId === topId);
+            document.getElementById("ovTopUser").textContent = topUser ? (topUser.fullName || topUser.username) : "—";
+
+            // Activity distribution bar
+            const actTypes = ["no_fry", "running", "steps", "yoga", "football", "my_design"];
+            const actLabels = ["No Fry", "Running", "Steps", "Yoga", "Football", "My Design"];
+            const actCounts = actTypes.map(a => allLogs.filter(l => l.activityType === a).length);
+            new Chart(document.getElementById("ovActChart"), {
+                type: "bar",
+                data: { labels: actLabels, datasets: [{ label: "กิจกรรม", data: actCounts, backgroundColor: ["#016FB7", "#0291e8", "#4da6e0", "#22c55e", "#f59e0b", "#8b5cf6"], borderRadius: 8 }] },
+                options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }, maintainAspectRatio: false },
+            });
+
+            // Weekly bar chart
+            const labels = [], counts = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(now); d.setDate(d.getDate() - i);
+                const key = d.toISOString().split("T")[0];
+                labels.push(d.toLocaleDateString("th-TH", { weekday: "short" }));
+                counts.push(allLogs.filter(l => l.date === key).length);
+            }
+            new Chart(document.getElementById("ovWeekChart"), {
+                type: "bar",
+                data: { labels, datasets: [{ label: "บันทึก", data: counts, backgroundColor: "rgba(1,111,183,0.7)", borderRadius: 8 }] },
+                options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }, maintainAspectRatio: false },
+            });
+        }
+
+        // ── Ranking ─────────────────────────────────────────────
+        function renderRanking() {
+            const tbody = document.getElementById("adminRankingBody");
+            const filtered = allUsers.filter(u => u.role !== "admin");
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted" data-i18n="gen_no_data">ไม่มีข้อมูล</td></tr>`;
+                return;
+            }
+
+            // Calculate scores
+            const userScores = filtered.map(u => ({
+                ...u,
+                score: allLogs.filter(l => l.userId === u.userId).length
+            })).sort((a, b) => b.score - a.score);
+
+            tbody.innerHTML = userScores.map((u, i) => {
+                const isTop = i < 3;
+                const rankClass = i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "";
+                return `
+                <tr class="${rankClass}">
+                    <td style="font-weight:${isTop ? 'bold' : 'normal'}">${isTop ? ['🥇', '🥈', '🥉'][i] : (i + 1)}</td>
+                    <td class="flex items-center gap-2" style="cursor:pointer;" onclick="window.location='admin-user-detail.html?userId=${u.userId}'">
+                        ${u.profilePicUrl
+                        ? `<img src="${u.profilePicUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt=""/>`
+                        : `<div style="width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:bold;">${(u.fullName || u.username)[0].toUpperCase()}</div>`
+                    }
+                        <span style="font-weight:${isTop ? 'bold' : 'normal'}">${u.fullName || u.username}</span>
+                    </td>
+                    <td class="text-right" style="font-weight:bold;color:var(--primary);">${u.score}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        // ── User Grid ───────────────────────────────────────────
+        function renderUserGrid(users) {
+            const grid = document.getElementById("userGrid");
+            const filtered = users.filter(u => u.role !== "admin");
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="text-muted text-sm" data-i18n="gen_no_data">ไม่มีผู้ใช้</div>`;
+                return;
+            }
+            grid.innerHTML = filtered.map(u => {
+                const initial = (u.fullName || u.username)[0].toUpperCase();
+                const avatarEl = u.profilePicUrl
+                    ? `<img src="${u.profilePicUrl}" style="width:100%;height:100%;object-fit:cover;" alt="" />`
+                    : `<span>${initial}</span>`;
+                const score = allLogs.filter(l => l.userId === u.userId).length;
+                return `
+      <div class="user-card" onclick="window.location='admin-user-detail.html?userId=${u.userId}'">
+        <div class="user-card-avatar">${avatarEl}</div>
+        <div class="user-card-name">${u.fullName || u.username}</div>
+        <div class="user-card-meta">@${u.username}</div>
+        <div class="badge badge-primary">${score} กิจกรรม</div>
+      </div>`;
+            }).join("");
+        }
+
+        // ── Search ──────────────────────────────────────────────
+        document.getElementById("searchInput").addEventListener("input", (e) => {
+            const q = e.target.value.toLowerCase();
+            renderUserGrid(allUsers.filter(u =>
+                (u.fullName || "").toLowerCase().includes(q) ||
+                (u.username || "").toLowerCase().includes(q)
+            ));
+        });
+
+        // ── Add User Modal ──────────────────────────────────────
+        function openAddUserModal() {
+            document.getElementById("userModalTitle").textContent = t("admin_add_user");
+            document.getElementById("editUserId").value = "";
+            document.getElementById("userForm").reset();
+            document.getElementById("userModal").classList.add("open");
+        }
+        function closeUserModal() {
+            document.getElementById("userModal").classList.remove("open");
+        }
+        document.getElementById("userModal").addEventListener("click", e => {
+            if (e.target === document.getElementById("userModal")) closeUserModal();
+        });
+        document.getElementById("userForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const editId = document.getElementById("editUserId").value;
+            const data = {
+                fullName: document.getElementById("uf_fullname").value.trim(),
+                username: document.getElementById("uf_username").value.trim(),
+                password: document.getElementById("uf_password").value,
+                employeeType: document.getElementById("uf_empType").value,
+                role: document.getElementById("uf_role").value,
+            };
+
+            // Validation: Password must contain at least one letter
+            if (data.password && data.password.trim() !== "" && !/[a-zA-Z]/.test(data.password)) {
+                showToast(t("prof_pass_alpha_req"), "error");
+                return;
+            }
+            try {
+                let res;
+                if (editId) {
+                    res = await API.updateUser(editId, data);
+                } else {
+                    res = await API.createUser(data);
+                }
+                if (res.success) {
+                    closeUserModal();
+                    showToast(t("form_success"), "success");
+                    loadAll();
+                } else throw new Error(res.message);
+            } catch (err) {
+                showToast(t("form_error"), "error");
+            }
+        });
+
+        function showToast(msg, type = "info") {
+            const icons = { success: "✅", error: "❌" };
+            const el = document.createElement("div");
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<span class="toast-icon">${icons[type] || "ℹ️"}</span><span class="toast-msg">${msg}</span>`;
+            document.getElementById("toastContainer").prepend(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+
+        loadAll();
+    </script>
+</body>
+
+</html>

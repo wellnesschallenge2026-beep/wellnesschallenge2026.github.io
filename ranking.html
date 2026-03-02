@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>อันดับ — Wyndham Hua Hin Wellness Challenge 2026</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+
+    <!-- ── NAVBAR ─────────────────────────────────────────────── -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <div class="navbar-logo">
+                <img src="assets/icons/MainLogo.png"
+                    class="logo-img" alt="Wyndham Logo" style="height:32px;margin-right:8px;">
+                <span>Wyndham Hua Hin Wellness Challenge 2026</span>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="dashboard.html" data-i18n="nav_dashboard">หน้าหลัก</a></li>
+                <li><a href="profile.html" data-i18n="nav_profile">โปรไฟล์</a></li>
+                <li><a href="ranking.html" class="active" data-i18n="nav_ranking">อันดับ</a></li>
+            </ul>
+            <div class="navbar-right">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" data-lang="th">ไทย</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="AUTH.logout()"
+                    data-i18n="nav_logout">ออกจากระบบ</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── PAGE HERO ──────────────────────────────────────────── -->
+    <div class="page-hero">
+        <div class="container">
+            <h1>🏆 <span data-i18n="rank_title">อันดับผู้เข้าร่วม</span></h1>
+            <p>Wyndham Hua Hin Wellness Challenge 2026 — Leaderboard</p>
+        </div>
+    </div>
+
+    <!-- ── MOBILE NAV ─────────────────────────────────────────── -->
+    <nav class="mobile-nav">
+        <a href="dashboard.html">
+            <span class="nav-icon">🏠</span>
+            <span data-i18n="nav_dashboard">หน้าหลัก</span>
+        </a>
+        <a href="profile.html">
+            <span class="nav-icon">👤</span>
+            <span data-i18n="nav_profile">โปรไฟล์</span>
+        </a>
+        <a href="ranking.html" class="active">
+            <span class="nav-icon">🏆</span>
+            <span data-i18n="nav_ranking">อันดับ</span>
+        </a>
+        <a href="#" onclick="AUTH.logout()" style="color:var(--danger);">
+            <span class="nav-icon">🚪</span>
+            <span data-i18n="nav_logout">ออกระบบ</span>
+        </a>
+    </nav>
+
+    <!-- ── MAIN ───────────────────────────────────────────────── -->
+    <main class="container section">
+
+        <!-- Spinner while loading -->
+        <div id="rankLoading" class="text-center mt-4">
+            <span class="spinner" style="width:40px;height:40px;border-width:4px;"></span>
+        </div>
+
+        <!-- My Rank Banner (pinned) -->
+        <div class="rank-highlight hidden" id="myRankBanner">
+            <div class="profile-avatar" id="myAvatarRank" style="width:64px;height:64px;font-size:1.5rem;">
+                <span id="myInitialRank"></span>
+                <img id="myImgRank" src="" alt="" style="display:none;" />
+            </div>
+            <div style="flex:1;z-index:1;">
+                <div style="font-size:0.8rem;opacity:0.8;" data-i18n="rank_your">อันดับของคุณ</div>
+                <div style="font-size:1.3rem;font-weight:700;" id="myRankName">—</div>
+                <div style="font-size:0.85rem;opacity:0.85;" id="myRankScore">0 pts</div>
+            </div>
+            <div style="z-index:1;">
+                <span style="font-family:'Outfit',sans-serif;font-size:0.8rem;opacity:0.8;"
+                    data-i18n="rank_rank">อันดับ</span>
+                <div class="rank-num" id="myRankNum">—</div>
+            </div>
+        </div>
+
+        <!-- Leaderboard list -->
+        <div id="rankList"></div>
+
+    </main>
+
+    <script src="js/config.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        const currentUser = AUTH.requireAuth();
+        if (!currentUser) throw new Error("Not authenticated");
+
+        const ACT_SCORES = CONFIG.SCORES;
+
+        function calcUserScore(logs) {
+            return logs.reduce((sum, l) => sum + (ACT_SCORES[l.activityType] || 0), 0);
+        }
+
+        async function loadRanking() {
+            try {
+                const [usersRes, allLogsRes] = await Promise.all([
+                    API.getUsers(),
+                    API.getAllActivities(),
+                ]);
+
+                const users = usersRes.success ? usersRes.users.filter(u => u.role !== "admin") : [];
+                const allLogs = allLogsRes.success ? allLogsRes.logs : [];
+
+                // Build ranked list by activity count
+                const ranked = users.map(u => {
+                    const userLogs = allLogs.filter(l => l.userId === u.userId);
+                    return {
+                        ...u,
+                        logs: userLogs,
+                        score: API.countActivities(userLogs),
+                    };
+                }).sort((a, b) => b.score - a.score);
+
+                document.getElementById("rankLoading").classList.add("hidden");
+
+                // My rank
+                const myIdx = ranked.findIndex(u => u.userId === currentUser.userId);
+                const myRank = myIdx >= 0 ? myIdx + 1 : 0;
+
+                // Banner
+                const banner = document.getElementById("myRankBanner");
+                banner.classList.remove("hidden");
+                document.getElementById("myRankName").textContent = currentUser.fullName || currentUser.username;
+                document.getElementById("myRankNum").textContent = myRank > 0 ? myRank : "—";
+                document.getElementById("myRankScore").textContent = `${myIdx >= 0 ? ranked[myIdx].score : 0} ${currentLang === "th" ? "กิจกรรม" : "activities"}`;
+                document.getElementById("myInitialRank").textContent = (currentUser.fullName || currentUser.username)[0].toUpperCase();
+                if (currentUser.profilePicUrl) {
+                    document.getElementById("myImgRank").src = currentUser.profilePicUrl;
+                    document.getElementById("myImgRank").style.display = "block";
+                    document.getElementById("myInitialRank").style.display = "none";
+                }
+
+                // Leaderboard rows
+                const listEl = document.getElementById("rankList");
+                if (ranked.length === 0) {
+                    listEl.innerHTML = `<div class="text-center text-muted mt-4" data-i18n="gen_no_data">ไม่มีข้อมูล</div>`;
+                    return;
+                }
+                listEl.innerHTML = ranked.map((u, i) => {
+                    const rank = i + 1;
+                    let badgeClass = "";
+                    if (rank === 1) badgeClass = "gold";
+                    else if (rank === 2) badgeClass = "silver";
+                    else if (rank === 3) badgeClass = "bronze";
+
+                    const isMe = u.userId === currentUser.userId;
+                    const initial = (u.fullName || u.username)[0].toUpperCase();
+                    const avatarEl = u.profilePicUrl
+                        ? `<img src="${u.profilePicUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="" />`
+                        : `<span style="font-weight:700;color:var(--primary);">${initial}</span>`;
+
+                    return `
+        <div class="rank-row ${isMe ? 'active-user' : ''}" style="${isMe ? 'background:var(--primary-light);border-color:var(--primary-mid);' : 'background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);margin-bottom:0.75rem;padding:1rem;'}; display:flex; align-items:center; gap:1rem;">
+          <div class="rank-badge ${badgeClass}" style="width:32px;height:32px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:700;${rank <= 3 ? 'color:inherit;' : 'color:var(--text-muted);'}">${rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : rank}</div>
+          <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--border);background:var(--primary-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            ${avatarEl}
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:1rem;${isMe ? 'color:var(--primary);' : ''}">
+              ${u.fullName || u.username}${isMe ? ' <span class="badge badge-primary" style="font-size:0.65rem;padding:0.1rem 0.4rem;">You</span>' : ''}
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.2rem;">${u.employeeType || "—"}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Outfit',sans-serif;font-weight:800;color:var(--primary);font-size:1.3rem;">${u.score}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);">${currentLang === "th" ? "กิจกรรม" : "activities"}</div>
+          </div>
+        </div>`;
+                }).join("");
+            } catch (err) {
+                console.error(err);
+                document.getElementById("rankLoading").innerHTML = `<p class="text-danger" style="text-align:center;">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+            }
+        }
+
+        loadRanking();
+    </script>
+</body>
+
+</html>

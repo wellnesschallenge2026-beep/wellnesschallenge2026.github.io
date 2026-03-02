@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin · User Detail — Wyndham Hua Hin Wellness Challenge 2026</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <div class="navbar-logo">
+                <img src="assets/icons/MainLogo.png" class="logo-img" alt="Wyndham Logo"
+                    style="height:32px;margin-right:8px;">
+                <span>Wyndham Hua Hin Wellness Challenge 2026 · <span
+                        style="color:#e8f4fd;font-size:0.85em;">Admin</span></span>
+            </div>
+            <div class="navbar-right">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" data-lang="th">ไทย</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="history.back()" data-i18n="admin_back">← กลับ</button>
+                <button class="btn btn-outline btn-sm" onclick="AUTH.logout()"
+                    data-i18n="nav_logout">ออกจากระบบ</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- PROFILE HEADER (admin view) -->
+    <div class="page-hero">
+        <div class="container hero-container">
+            <div class="profile-avatar-wrap" style="position:relative;">
+                <div class="profile-avatar" id="detailAvatar">
+                    <span id="detailInitial">—</span>
+                    <img id="detailAvatarImg" src="" alt="" style="display:none;" />
+                </div>
+                <!-- Admin can change profile pic too -->
+                <button class="avatar-edit-btn" id="adminChangePicBtn" title="เปลี่ยนรูป">✏️</button>
+                <input type="file" id="adminAvatarInput" accept="image/*" style="display:none;" />
+            </div>
+            <div class="hero-info">
+                <div style="font-size:0.8rem;color:rgba(255,255,255,0.7);" data-i18n="admin_users">ผู้ใช้งาน</div>
+                <h1 id="detailName">—</h1>
+                <p id="detailMeta"></p>
+                <div class="mt-3" style="display:flex;gap:0.75rem;justify-content:inherit;">
+                    <button class="btn btn-outline btn-sm" style="color:white;border-color:rgba(255,255,255,0.5);"
+                        onclick="openEditModal()">✏️ <span data-i18n="admin_edit">แก้ไข</span></button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCurrentUser()">🗑️ <span
+                            data-i18n="admin_delete">ลบ</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="container" style="margin-top:-1rem;">
+        <div class="stats-grid" id="detailStats">
+            <div class="stat-card">
+                <div class="stat-value" id="dStatTotal">—</div>
+                <div class="stat-label" data-i18n="prof_total">กิจกรรมทั้งหมด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="dStatScore">—</div>
+                <div class="stat-label" data-i18n="prof_score">คะแนนรวม</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="dStatWeek">—</div>
+                <div class="stat-label" data-i18n="prof_weekly">สัปดาห์นี้</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="container section">
+
+        <!-- Charts row -->
+        <div class="card mb-4">
+            <h3 style="font-size:1rem;margin-bottom:1rem;" data-i18n="admin_chart_dist">Activity Breakdown</h3>
+            <div style="height:160px;position:relative;width:100%;">
+                <canvas id="detailBreakChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Activity tabs per type -->
+        <div class="card">
+            <h3 style="font-size:1rem;margin-bottom:1rem;" data-i18n="admin_evidence">หลักฐานแต่ละกิจกรรม</h3>
+            <div class="tabs" id="actTabs">
+                <button class="tab-btn active" data-tab="all" onclick="switchTab('all',this)">ทั้งหมด</button>
+                <button class="tab-btn" data-tab="no_fry" onclick="switchTab('no_fry',this)">🥗 No Fry</button>
+                <button class="tab-btn" data-tab="running" onclick="switchTab('running',this)">🏃 Running</button>
+                <button class="tab-btn" data-tab="steps" onclick="switchTab('steps',this)">👟 Steps</button>
+                <button class="tab-btn" data-tab="yoga" onclick="switchTab('yoga',this)">🧘 Yoga</button>
+                <button class="tab-btn" data-tab="football" onclick="switchTab('football',this)">⚽ Football</button>
+                <button class="tab-btn" data-tab="my_design" onclick="switchTab('my_design',this)">✨ My Design</button>
+            </div>
+            <div class="table-wrap mt-3">
+                <table>
+                    <thead>
+                        <tr>
+                            <th data-i18n="prof_activity">กิจกรรม</th>
+                            <th data-i18n="prof_date">วันที่</th>
+                            <th data-i18n="prof_details">รายละเอียด</th>
+                            <th data-i18n="prof_evidence">หลักฐาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detailLogBody">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted" data-i18n="gen_loading">กำลังโหลด...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- EDIT USER MODAL -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">✏️ <span data-i18n="admin_edit">แก้ไขข้อมูลผู้ใช้</span></div>
+                <button class="btn-close" onclick="closeEditModal()">✕</button>
+            </div>
+            <form id="editForm" novalidate>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_fullname">ชื่อ-นามสกุล</label>
+                        <input class="form-input" type="text" id="ef_fullname" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_username">ชื่อผู้ใช้</label>
+                        <input class="form-input" type="text" id="ef_username" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_password">รหัสผ่านใหม่
+                            (เว้นว่างถ้าไม่เปลี่ยน)</label>
+                        <input class="form-input" type="text" id="ef_password" placeholder="รหัสผ่านใหม่" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_emp_type">ประเภทพนักงาน</label>
+                        <select class="form-select" id="ef_empType">
+                            <option value="office">Office</option>
+                            <option value="operation">Operation</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="admin_role">สิทธิ์</label>
+                        <select class="form-select" id="ef_role">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeEditModal()"
+                        data-i18n="admin_cancel">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="admin_save">บันทึก</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div class="lightbox" id="lightbox" onclick="document.getElementById('lightbox').classList.remove('open')">
+        <img id="lightboxImg" src="" alt="Evidence" />
+        <div class="lightbox-actions" onclick="event.stopPropagation()">
+            <a id="lightboxDownload" href="#" download class="btn btn-primary" data-i18n="admin_download">ดาวน์โหลด</a>
+            <button class="btn btn-outline" style="color:white;border-color:white;"
+                onclick="document.getElementById('lightbox').classList.remove('open')"
+                data-i18n="gen_close">ปิด</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        AUTH.requireAdmin();
+
+        // Get userId from URL param
+        const params = new URLSearchParams(window.location.search);
+        const targetUserId = params.get("userId");
+        if (!targetUserId) { window.location.href = "admin.html"; }
+
+        const ACT_LABELS = {
+            no_fry: "🥗 No Fry", running: "🏃 Running", steps: "👟 Steps",
+            yoga: "🧘 Yoga", football: "⚽ Football", my_design: "✨ My Design",
+        };
+
+        let userData = null;
+        let userLogs = [];
+        let currentTab = "all";
+
+        async function loadUserDetail() {
+            try {
+                const [ur, lr] = await Promise.all([
+                    API.getUser(targetUserId),
+                    API.getActivities(targetUserId),
+                ]);
+                userData = ur.success ? ur.user : null;
+                userLogs = lr.success ? (lr.logs || []) : [];
+
+                if (!userData) { alert("ไม่พบผู้ใช้"); history.back(); return; }
+
+                // Header
+                document.getElementById("detailName").textContent = userData.fullName || userData.username;
+                document.getElementById("detailMeta").textContent = `@${userData.username} · ${userData.employeeType || "—"} · ${userData.role}`;
+                document.getElementById("detailInitial").textContent = (userData.fullName || userData.username)[0].toUpperCase();
+                if (userData.profilePicUrl) {
+                    const img = document.getElementById("detailAvatarImg");
+                    img.src = userData.profilePicUrl;
+                    img.style.display = "block";
+                    document.getElementById("detailInitial").style.display = "none";
+                }
+
+                // Stats
+                const now = new Date();
+                const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+                const weekLogs = userLogs.filter(l => new Date(l.date) >= weekAgo);
+                document.getElementById("dStatTotal").textContent = userLogs.length;
+                document.getElementById("dStatScore").textContent = userLogs.length; // Replaced calcScore
+                document.getElementById("dStatWeek").textContent = weekLogs.length;
+
+                // Charts
+                renderCharts();
+                renderLogs("all");
+            } catch (err) { console.error(err); }
+        }
+
+        function renderCharts() {
+            const actTypes = ["no_fry", "running", "steps", "yoga", "football", "my_design"];
+            const actLabels = ["No Fry", "Running", "Steps", "Yoga", "Football", "My Design"];
+            const actCounts = actTypes.map(a => userLogs.filter(l => l.activityType === a).length);
+            new Chart(document.getElementById("detailBreakChart"), {
+                type: "bar",
+                data: { labels: actLabels, datasets: [{ label: "กิจกรรม", data: actCounts, backgroundColor: ["#016FB7", "#0291e8", "#4da6e0", "#22c55e", "#f59e0b", "#8b5cf6"], borderRadius: 8 }] },
+                options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }, maintainAspectRatio: false },
+            });
+        }
+
+        function renderLogs(type) {
+            const filtered = type === "all" ? userLogs : userLogs.filter(l => l.activityType === type);
+            const tbody = document.getElementById("detailLogBody");
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted" data-i18n="gen_no_data">ไม่มีข้อมูล</td></tr>`;
+                applyLang();
+                return;
+            }
+            const sorted = [...filtered].sort((a, b) => new Date(b.date) - new Date(a.date));
+            tbody.innerHTML = sorted.map(log => {
+                let details = {};
+                try { details = JSON.parse(log.details || "{}"); } catch { }
+
+                const detailsMap = {
+                    location: "📍 ", distance: "🏃‍♂️ ", steps: "👟 ",
+                    employeeType: "👥 ", sessionNum: "🔄 ", duration: "⏱️ ",
+                    days: "📅 ", note: "📝 ", challengeName: "✨ ", description: "📄 ",
+                    type: "🏷️ "
+                };
+                const detailParts = [];
+                for (const [k, v] of Object.entries(details)) {
+                    if (["date", "time"].includes(k) || !v || v.toString().trim() === "") continue;
+                    const prefix = detailsMap[k] || `${k}: `;
+                    const suffix = (k === "distance") ? " km" : (k === "steps") ? " ก้าว" : (k === "duration") ? " นาที" : (k === "days") ? " วัน" : "";
+                    detailParts.push(`<span style="white-space:nowrap;margin-right:0.4rem;display:inline-block;background:var(--bg);padding:0.15rem 0.4rem;border-radius:4px;border:1px solid var(--border);font-size:0.75rem;margin-bottom:0.2rem;">${prefix}${v}${suffix}</span>`);
+                }
+                const detailStr = detailParts.join("");
+                const dateStr = log.date ? log.date.split("T")[0] : "—";
+
+                const evidenceEl = log.evidenceUrl
+                    ? `<div class="flex gap-1 items-center">
+            <img src="${log.evidenceUrl}" class="thumb" alt="evidence" onclick="openLightbox('${log.evidenceUrl}')" />
+            <a href="${log.evidenceUrl}" download class="btn-icon" title="${t('admin_download')}">⬇️</a>
+           </div>`
+                    : `<span class="text-muted text-xs" data-i18n="admin_no_evidence">ไม่มีหลักฐาน</span>`;
+                return `<tr>
+        <td><span class="badge badge-primary">${ACT_LABELS[log.activityType] || log.activityType}</span></td>
+        <td style="white-space:nowrap;">${dateStr}</td>
+        <td class="text-sm" style="line-height:1.6;">${detailStr || '<span class="text-muted">—</span>'}</td>
+        <td>${evidenceEl}</td>
+      </tr>`;
+            }).join("");
+        }
+
+        function switchTab(type, el) {
+            currentTab = type;
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            el.classList.add("active");
+            renderLogs(type);
+        }
+
+        function openLightbox(url) {
+            document.getElementById("lightboxImg").src = url;
+            document.getElementById("lightboxDownload").href = url;
+            document.getElementById("lightbox").classList.add("open");
+        }
+
+        // ── Edit Modal ─────────────────────────────────────────
+        function openEditModal() {
+            if (!userData) return;
+            document.getElementById("ef_fullname").value = userData.fullName || "";
+            document.getElementById("ef_username").value = userData.username || "";
+            document.getElementById("ef_password").value = "";
+            document.getElementById("ef_empType").value = userData.employeeType || "office";
+            document.getElementById("ef_role").value = userData.role || "user";
+            document.getElementById("editModal").classList.add("open");
+        }
+        function closeEditModal() {
+            document.getElementById("editModal").classList.remove("open");
+        }
+        document.getElementById("editModal").addEventListener("click", e => {
+            if (e.target === document.getElementById("editModal")) closeEditModal();
+        });
+        document.getElementById("editForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const data = {
+                fullName: document.getElementById("ef_fullname").value.trim(),
+                username: document.getElementById("ef_username").value.trim(),
+                password: document.getElementById("ef_password").value,
+                employeeType: document.getElementById("ef_empType").value,
+                role: document.getElementById("ef_role").value,
+            };
+            try {
+                const res = await API.updateUser(targetUserId, data);
+                if (res.success) {
+                    closeEditModal();
+                    showToast(t("form_success"), "success");
+                    loadUserDetail();
+                } else throw new Error(res.message);
+            } catch { showToast(t("form_error"), "error"); }
+        });
+
+        // ── Delete User ────────────────────────────────────────
+        async function deleteCurrentUser() {
+            if (!confirm(t("admin_confirm_del"))) return;
+            try {
+                const res = await API.deleteUser(targetUserId);
+                if (res.success) {
+                    showToast("ลบผู้ใช้สำเร็จ", "success");
+                    setTimeout(() => { window.location.href = "admin.html"; }, 1200);
+                } else throw new Error(res.message);
+            } catch { showToast(t("form_error"), "error"); }
+        }
+
+        // ── Admin change profile pic ───────────────────────────
+        document.getElementById("adminChangePicBtn").addEventListener("click", () => {
+            document.getElementById("adminAvatarInput").click();
+        });
+        document.getElementById("adminAvatarInput").addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                const { base64, mimeType } = await API.fileToBase64(file);
+                const res = await API.updateProfilePic(targetUserId, base64, mimeType);
+                if (res.success) {
+                    const img = document.getElementById("detailAvatarImg");
+                    img.src = res.url;
+                    img.style.display = "block";
+                    document.getElementById("detailInitial").style.display = "none";
+                    showToast("อัพโหลดรูปสำเร็จ", "success");
+                }
+            } catch { showToast(t("form_error"), "error"); }
+        });
+
+        function showToast(msg, type = "info") {
+            const icons = { success: "✅", error: "❌" };
+            const el = document.createElement("div");
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<span class="toast-icon">${icons[type] || "ℹ️"}</span><span class="toast-msg">${msg}</span>`;
+            document.getElementById("toastContainer").prepend(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+
+        loadUserDetail();
+    </script>
+</body>
+
+</html>

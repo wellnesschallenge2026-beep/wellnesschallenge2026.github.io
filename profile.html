@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>โปรไฟล์ — Wyndham Hua Hin Wellness Challenge 2026</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+    <!-- ── NAVBAR ─────────────────────────────────────────────── -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <div class="navbar-logo">
+                <img src="assets/icons/MainLogo.png" class="logo-img" alt="Wyndham Logo"
+                    style="height:32px;margin-right:8px;">
+                <span>Wyndham Hua Hin Wellness Challenge 2026</span>
+            </div>
+            <ul class="navbar-nav">
+                <li><a href="dashboard.html" data-i18n="nav_dashboard">หน้าหลัก</a></li>
+                <li><a href="profile.html" class="active" data-i18n="nav_profile">โปรไฟล์</a></li>
+                <li><a href="ranking.html" data-i18n="nav_ranking">อันดับ</a></li>
+            </ul>
+            <div class="navbar-right">
+                <div class="lang-toggle">
+                    <button class="lang-btn active" data-lang="th">ไทย</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="AUTH.logout()"
+                    data-i18n="nav_logout">ออกจากระบบ</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ── PROFILE HEADER ─────────────────────────────────────── -->
+    <div class="page-hero">
+        <div class="container hero-container">
+            <!-- Avatar -->
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar" id="profileAvatar">
+                    <span id="avatarInitial"></span>
+                    <img id="avatarImg" src="" alt="" style="display:none;" />
+                </div>
+                <button class="avatar-edit-btn" onclick="document.getElementById('avatarInput').click()"
+                    title="เปลี่ยนรูปโปรไฟล์">✏️</button>
+                <input type="file" id="avatarInput" accept="image/*" style="display:none;" />
+            </div>
+            <!-- Info -->
+            <div class="hero-info">
+                <h1 id="profileName">—</h1>
+                <p id="profileMeta"></p>
+                <button class="btn btn-outline btn-sm mt-3" onclick="openSettingsModal()"
+                    data-i18n="prof_settings">ตั้งค่าโปรไฟล์</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── MOBILE NAV ─────────────────────────────────────────── -->
+    <nav class="mobile-nav">
+        <a href="dashboard.html">
+            <span class="nav-icon">🏠</span>
+            <span data-i18n="nav_dashboard">หน้าหลัก</span>
+        </a>
+        <a href="profile.html" class="active">
+            <span class="nav-icon">👤</span>
+            <span data-i18n="nav_profile">โปรไฟล์</span>
+        </a>
+        <a href="ranking.html">
+            <span class="nav-icon">🏆</span>
+            <span data-i18n="nav_ranking">อันดับ</span>
+        </a>
+        <a href="#" onclick="AUTH.logout()" style="color:var(--danger);">
+            <span class="nav-icon">🚪</span>
+            <span data-i18n="nav_logout">ออกระบบ</span>
+        </a>
+    </nav>
+
+    <!-- ── STATS ROW ──────────────────────────────────────────── -->
+    <div class="container" style="margin-top:-1rem;">
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotal">—</div>
+                <div class="stat-label" data-i18n="prof_total">กิจกรรมทั้งหมด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statScore">—</div>
+                <div class="stat-label" data-i18n="prof_score">คะแนนรวม</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statWeek">—</div>
+                <div class="stat-label" data-i18n="prof_weekly">สัปดาห์นี้</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── CHARTS + HISTORY ───────────────────────────────────── -->
+    <main class="container section">
+        <div class="card">
+            <h3 style="font-size:1rem;margin-bottom:1rem;" data-i18n="admin_chart_dist">Activity Breakdown</h3>
+            <div style="height:160px;position:relative;width:100%;">
+                <canvas id="breakdownChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Activity History Table -->
+        <div class="card mt-4">
+            <h3 style="font-size:1rem;margin-bottom:1rem;" data-i18n="prof_history">ประวัติกิจกรรม</h3>
+            <div class="table-wrap">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th data-i18n="prof_activity">กิจกรรม</th>
+                            <th data-i18n="prof_date">วันที่</th>
+                            <th data-i18n="prof_details">รายละเอียด</th>
+                            <th data-i18n="prof_evidence">หลักฐาน</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <tr>
+                            <td colspan="4" class="text-center text-muted" data-i18n="gen_loading">กำลังโหลด...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- ── SETTINGS MODAL ─────────────────────────────────────── -->
+    <div class="modal-overlay" id="settingsModal">
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header">
+                <div class="flex items-center gap-2">
+                    <span style="font-size:1.2rem;">⚙️</span>
+                    <span id="settingsModalTitle" data-i18n="prof_settings">ตั้งค่าโปรไฟล์</span>
+                </div>
+                <button class="btn-close" onclick="closeSettingsModal()">✕</button>
+            </div>
+            <form id="settingsForm" novalidate>
+                <div class="modal-body" style="display:flex;flex-direction:column;gap:1rem;padding:1.5rem;">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="prof_edit_username">เปลี่ยนชื่อผู้ใช้</label>
+                        <input type="text" class="form-input" id="set_username" required />
+                    </div>
+                    <hr style="border:0;border-top:1px solid var(--border);margin:0.5rem 0;" />
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="prof_current_password">รหัสผ่านปัจจุบัน</label>
+                        <input type="password" class="form-input" id="set_current_pass" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="prof_new_password">รหัสผ่านใหม่ (ไม่บังคับ)</label>
+                        <input type="password" class="form-input" id="set_new_pass" />
+                        <div class="text-xs mt-1" style="color:var(--danger);" data-i18n="form_pass_hint_alpha"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="prof_confirm_password">ยืนยันรหัสผ่านใหม่</label>
+                        <input type="password" class="form-input" id="set_confirm_pass" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeSettingsModal()"
+                        data-i18n="gen_close">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary" id="set_saveBtn">
+                        <span id="set_btnText" data-i18n="prof_update_btn">บันทึกการเปลี่ยนแปลง</span>
+                        <span id="set_spinner" class="spinner hidden"
+                            style="width:16px;height:16px;border-width:2px;border-color:rgba(255,255,255,0.3);border-top-color:white;"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── LIGHTBOX ───────────────────────────────────────────── -->
+    <div class="lightbox" id="lightbox" onclick="document.getElementById('lightbox').classList.remove('open')">
+        <img id="lightboxImg" src="" alt="Evidence" />
+        <div class="lightbox-actions">
+            <a id="lightboxDownload" href="#" download class="btn btn-primary"
+                data-i18n="admin_download">ดาวน์โหลด">ดาวน์โหลด</a>
+            <button class="btn btn-outline" style="color:white;border-color:white;"
+                onclick="document.getElementById('lightbox').classList.remove('open')"
+                data-i18n="gen_close">ปิด</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="js/config.js"></script>
+    <script src="js/lang.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script>
+        const currentUser = AUTH.requireAuth();
+        if (!currentUser) throw new Error("Not authenticated");
+
+        const ACT_LABELS = {
+            no_fry: "🥗 No Fry", running: "🏃 Running", steps: "👟 Steps",
+            yoga: "🧘 Yoga", football: "⚽ Football", my_design: "✨ My Design",
+        };
+
+        document.getElementById("profileName").textContent = currentUser.fullName || currentUser.username;
+        document.getElementById("avatarInitial").textContent = (currentUser.fullName || currentUser.username)[0].toUpperCase();
+        document.getElementById("profileMeta").textContent = `${currentUser.username} · ${currentUser.employeeType || "—"}`;
+
+        if (currentUser.profilePicUrl) {
+            const img = document.getElementById("avatarImg");
+            img.src = currentUser.profilePicUrl;
+            img.style.display = "block";
+            document.getElementById("avatarInitial").style.display = "none";
+        }
+
+        // ── Avatar upload ──────────────────────────────────────
+        document.getElementById("avatarInput").addEventListener("change", async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            try {
+                const { base64, mimeType } = await API.fileToBase64(file);
+                const res = await API.updateProfilePic(currentUser.userId, base64, mimeType);
+                if (res.success) {
+                    const img = document.getElementById("avatarImg");
+                    img.src = res.url;
+                    img.style.display = "block";
+                    document.getElementById("avatarInitial").style.display = "none";
+                    // Update session
+                    currentUser.profilePicUrl = res.url;
+                    AUTH.setSession(currentUser);
+                    showToast("อัพโหลดรูปโปรไฟล์สำเร็จ!", "success");
+                }
+            } catch { showToast("เกิดข้อผิดพลาด", "error"); }
+        });
+
+        // ── Load activity data ─────────────────────────────────
+        let breakdownChart;
+
+        async function loadData() {
+            try {
+                const res = await API.getActivities(currentUser.userId);
+                const logs = res.success ? (res.logs || []) : [];
+
+                // Stats
+                const now = new Date();
+                const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+                const weekLogs = logs.filter(l => new Date(l.date) >= weekAgo);
+                document.getElementById("statTotal").textContent = logs.length;
+                document.getElementById("statScore").textContent = API.countActivities(logs);
+                document.getElementById("statWeek").textContent = weekLogs.length;
+
+                // Breakdown doughnut -> Bar
+                const actTypes = ["no_fry", "running", "steps", "yoga", "football", "my_design"];
+                const bdCounts = actTypes.map(a => logs.filter(l => l.activityType === a).length);
+                if (breakdownChart) breakdownChart.destroy();
+                breakdownChart = new Chart(document.getElementById("breakdownChart"), {
+                    type: "bar",
+                    data: {
+                        labels: actTypes.map(a => ACT_LABELS[a]),
+                        datasets: [{
+                            label: "กิจกรรม",
+                            data: bdCounts,
+                            backgroundColor: ["#016FB7", "#0291e8", "#4da6e0", "#22c55e", "#f59e0b", "#8b5cf6"],
+                            borderRadius: 8,
+                        }],
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: { x: { ticks: { font: { size: 10 } } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                        maintainAspectRatio: false,
+                    },
+                });
+
+                // History table
+                const tbody = document.getElementById("historyBody");
+                if (logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted" data-i18n="gen_no_data">ไม่มีข้อมูล</td></tr>`;
+                    return;
+                }
+                const sorted = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50);
+                tbody.innerHTML = sorted.map(log => {
+                    let details = {};
+                    try { details = JSON.parse(log.details || "{}"); } catch { }
+
+                    const detailsMap = {
+                        location: "📍 ", distance: "🏃‍♂️ ", steps: "👟 ",
+                        employeeType: "👥 ", sessionNum: "🔄 ", duration: "⏱️ ",
+                        days: "📅 ", note: "📝 ", challengeName: "✨ ", description: "📄 ",
+                        type: "🏷️ "
+                    };
+                    const detailParts = [];
+                    for (const [k, v] of Object.entries(details)) {
+                        if (["date", "time"].includes(k) || !v || v.toString().trim() === "") continue;
+                        const prefix = detailsMap[k] || `${k}: `;
+                        const suffix = (k === "distance") ? " km" : (k === "steps") ? " ก้าว" : (k === "duration") ? " นาที" : (k === "days") ? " วัน" : "";
+                        detailParts.push(`<span style="white-space:nowrap;margin-right:0.4rem;display:inline-block;background:var(--bg);padding:0.15rem 0.4rem;border-radius:4px;border:1px solid var(--border);font-size:0.75rem;margin-bottom:0.2rem;">${prefix}${v}${suffix}</span>`);
+                    }
+                    const detailStr = detailParts.join("");
+
+                    const dateStr = log.date ? log.date.split("T")[0] : "—";
+
+                    const evidenceEl = log.evidenceUrl
+                        ? `<img src="${log.evidenceUrl}" class="thumb" alt="evidence" onclick="openLightbox('${log.evidenceUrl}')" />`
+                        : `<span class="text-muted text-xs">—</span>`;
+                    return `<tr>
+          <td><span class="badge badge-primary">${ACT_LABELS[log.activityType] || log.activityType}</span></td>
+          <td style="white-space:nowrap;">${dateStr}</td>
+          <td class="text-sm" style="line-height:1.6;">${detailStr || '<span class="text-muted">—</span>'}</td>
+          <td>${evidenceEl}</td>
+        </tr>`;
+                }).join("");
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function openLightbox(url) {
+            document.getElementById("lightboxImg").src = url;
+            document.getElementById("lightboxDownload").href = url;
+            document.getElementById("lightbox").classList.add("open");
+        }
+
+        function showToast(msg, type = "info") {
+            const icons = { success: "✅", error: "❌" };
+            const el = document.createElement("div");
+            el.className = `toast toast-${type}`;
+            el.innerHTML = `<span class="toast-icon">${icons[type] || "ℹ️"}</span><span class="toast-msg">${msg}</span>`;
+            document.getElementById("toastContainer").prepend(el);
+            setTimeout(() => el.remove(), 4000);
+        }
+
+        // ── Settings Modal ──────────────────────────────────────
+        function openSettingsModal() {
+            document.getElementById("set_username").value = currentUser.username;
+            document.getElementById("set_current_pass").value = "";
+            document.getElementById("set_new_pass").value = "";
+            document.getElementById("set_confirm_pass").value = "";
+            document.getElementById("settingsModal").classList.add("open");
+        }
+        function closeSettingsModal() {
+            document.getElementById("settingsModal").classList.remove("open");
+        }
+        document.getElementById("settingsModal").addEventListener("click", e => {
+            if (e.target === document.getElementById("settingsModal")) closeSettingsModal();
+        });
+
+        document.getElementById("settingsForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const username = document.getElementById("set_username").value.trim();
+            const currentPass = document.getElementById("set_current_pass").value;
+            const newPass = document.getElementById("set_new_pass").value;
+            const confirmPass = document.getElementById("set_confirm_pass").value;
+
+            if (newPass && newPass !== confirmPass) {
+                showToast(t("prof_pass_mismatch"), "error");
+                return;
+            }
+            if (newPass && !/[a-zA-Z]/.test(newPass)) {
+                showToast(t("prof_pass_alpha_req"), "error");
+                return;
+            }
+
+            const btn = document.getElementById("set_saveBtn");
+            const spinner = document.getElementById("set_spinner");
+            const btnText = document.getElementById("set_btnText");
+
+            btn.disabled = true;
+            spinner.classList.remove("hidden");
+            btnText.classList.add("hidden");
+
+            try {
+                const res = await API.updateUserSelf(currentUser.userId, {
+                    username,
+                    currentPassword: currentPass,
+                    newPassword: newPass
+                });
+
+                if (res.success) {
+                    showToast(t("prof_update_success"), "success");
+                    // Update session
+                    currentUser.username = username;
+                    AUTH.setSession(currentUser);
+                    // Refresh UI
+                    document.getElementById("profileMeta").textContent = `${currentUser.username} · ${currentUser.employeeType || "—"}`;
+                    closeSettingsModal();
+                } else {
+                    if (res.code === "INVALID_CURRENT") showToast(t("prof_invalid_current"), "error");
+                    else if (res.code === "USER_EXISTS") showToast(t("prof_user_exists"), "error");
+                    else showToast(res.message || t("form_error"), "error");
+                }
+            } catch (err) {
+                showToast(t("form_error"), "error");
+            } finally {
+                btn.disabled = false;
+                spinner.classList.add("hidden");
+                btnText.classList.remove("hidden");
+            }
+        });
+
+        loadData();
+    </script>
+</body>
+
+</html>

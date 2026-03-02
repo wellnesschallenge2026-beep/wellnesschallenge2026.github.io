@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wyndham Hua Hin Wellness Challenge 2026 — Login</title>
+  <meta name="description"
+    content="Sign in to the Wyndham Hua Hin Wellness Challenge 2026 employee wellness tracking platform." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+</head>
+
+<body>
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <div class="login-page">
+    <!-- Language toggle (top right) -->
+    <div style="position:fixed;top:1.25rem;right:1.5rem;z-index:10;">
+      <div class="lang-toggle">
+        <button class="lang-btn active" data-lang="th">ไทย</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+
+    <div class="login-card">
+      <!-- Logo section -->
+      <div class="login-logo">
+        <div class="login-logo-img">
+          <img src="assets/icons/MainLogo.png" alt="Wyndham Logo"
+            style="display:block;margin:0 auto 1rem;width:100%;height:auto;max-width:240px;">
+        </div>
+        <h1 data-i18n="login_title">Wyndham Hua Hin<br>Wellness Challenge 2026</h1>
+        <p data-i18n="login_subtitle">ยินดีต้อนรับ! เข้าสู่ระบบเพื่อเริ่มต้น</p>
+      </div>
+
+      <!-- Error message -->
+      <div class="login-error" id="loginError">
+        <span data-i18n="login_error">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</span>
+      </div>
+
+      <!-- Login form -->
+      <form class="login-form" id="loginForm" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="username" data-i18n="login_user_ph">ชื่อผู้ใช้ หรือ ชื่อ-นามสกุล</label>
+          <input class="form-input" type="text" id="username" name="username" autocomplete="username"
+            data-i18n="login_user_ph" placeholder="ชื่อผู้ใช้ หรือ ชื่อ-นามสกุล" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password" data-i18n="login_password">รหัสผ่าน</label>
+          <div class="relative">
+            <input class="form-input" type="password" id="password" name="password" autocomplete="current-password"
+              data-i18n="login_password" placeholder="รหัสผ่าน" style="padding-right:2.8rem;" required />
+            <button type="button" id="togglePwd" style="
+              position:absolute;right:0.75rem;top:50%;transform:translateY(-50%);
+              background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;
+            ">👁️</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary w-full" id="loginBtn" style="margin-top:0.5rem;padding:0.8rem;">
+          <span id="loginBtnText" data-i18n="login_btn">เข้าสู่ระบบ</span>
+          <span id="loginSpinner" class="spinner hidden"
+            style="width:18px;height:18px;border-width:2px;border-color:rgba(255,255,255,0.3);border-top-color:white;"></span>
+        </button>
+      </form>
+
+      <p class="text-center text-xs text-muted mt-3">
+      <p class="text-center text-xs text-muted mt-3">
+        &copy; 2026 Wyndham Hua Hin Wellness Challenge · Powered by Google Sheets
+      </p>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/lang.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (AUTH.isLoggedIn()) {
+      window.location.href = AUTH.isAdmin() ? "admin.html" : "dashboard.html";
+    }
+
+    // Toggle password visibility
+    document.getElementById("togglePwd").addEventListener("click", () => {
+      const pwd = document.getElementById("password");
+      pwd.type = pwd.type === "password" ? "text" : "password";
+    });
+
+    // Login form submit
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      const errorEl = document.getElementById("loginError");
+      const btn = document.getElementById("loginBtn");
+      const spinner = document.getElementById("loginSpinner");
+      const btnText = document.getElementById("loginBtnText");
+
+      if (!username || !password) return;
+
+      // UI loading state
+      btn.disabled = true;
+      spinner.classList.remove("hidden");
+      btnText.classList.add("hidden");
+      errorEl.classList.remove("show");
+
+      try {
+        const res = await API.login(username, password);
+        if (res.success) {
+          AUTH.setSession(res.user);
+          window.location.href = res.user.role === "admin" ? "admin.html" : "dashboard.html";
+        } else {
+          errorEl.classList.add("show");
+          btn.disabled = false;
+          spinner.classList.add("hidden");
+          btnText.classList.remove("hidden");
+        }
+      } catch (err) {
+        console.error(err);
+        errorEl.classList.add("show");
+        btn.disabled = false;
+        spinner.classList.add("hidden");
+        btnText.classList.remove("hidden");
+      }
+    });
+  </script>
+</body>
+
+</html>
