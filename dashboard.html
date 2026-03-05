@@ -316,6 +316,11 @@
             <option value="Weight Training" data-i18n="sub_weight_training">Weight Training</option>
             <option value="Less Meat" data-i18n="sub_less_meat">Less Meat</option>
             <option value="Low Carb" data-i18n="sub_low_carb">Low Carb</option>
+            <option value="Water" data-i18n="sub_water">ดื่มน้ำ 1.4 ลิตร / วัน</option>
+            <option value="Black Coffee" data-i18n="sub_black_coffee">โอเลี้ยง เหลืออาทิตย์ละแก้ว</option>
+            <option value="No Food Evening" data-i18n="sub_no_food_evening">ไม่กินอาหารหลัง 5-6 โมงเย็น</option>
+            <option value="Plank" data-i18n="sub_plank">Plank ขั้นต่ำ 3 นาที ทุกวัน</option>
+            <option value="Other Exercise" data-i18n="sub_other_exercise">ออกกำลังกายอื่นๆ</option>
           </select>
         </div>
         <div id="subActivityFields"></div>
@@ -387,7 +392,7 @@
             if (!container) return;
 
             let html = "";
-            if (["Tennis", "Jump Rope", "Weight Training"].includes(val)) {
+            if (["Tennis", "Jump Rope", "Weight Training", "Plank"].includes(val)) {
                 html = `
                     <div class="form-group">
                         <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
@@ -404,8 +409,19 @@
             } else if (["Less Meat", "Low Carb"].includes(val)) {
                 html = `
                     <div class="form-group">
-                        <label class="form-label" data-i18n="form_note">ชื่อเมนู</label>
-                        <input class="form-input" type="text" name="note" data-i18n="form_note" placeholder="ชื่อเมนู" required />
+                        <label class="form-label" data-i18n="form_note">หมายเหตุ</label>
+                        <input class="form-input" type="text" name="note" data-i18n="form_note" placeholder="หมายเหตุ" />
+                    </div>
+                `;
+            } else if (val === "Other Exercise") {
+                html = `
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_desc">รายละเอียด</label>
+                        <textarea class="form-textarea" name="description" placeholder="รายละเอียดการออกกำลังกาย" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
+                        <input class="form-input" type="number" name="duration" min="1" placeholder="นาที" required />
                     </div>
                 `;
             }
