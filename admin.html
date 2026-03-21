@@ -241,12 +241,12 @@
             document.getElementById("ovTopUser").textContent = topUser ? (topUser.fullName || topUser.username) : "—";
 
             // Activity distribution bar
-            const actTypes = ["no_fry", "running", "steps", "yoga", "football", "my_design"];
-            const actLabels = ["No Fry", "Running", "Steps", "Yoga", "Football", "My Design"];
+            const actTypes = ["no_fry", "running", "steps", "yoga", "football", "my_design", "superfit"];
+            const actLabels = ["No Fry", "Running", "Steps", "Yoga", "Football", "My Design", "Superfit"];
             const actCounts = actTypes.map(a => allLogs.filter(l => l.activityType === a).length);
             new Chart(document.getElementById("ovActChart"), {
                 type: "bar",
-                data: { labels: actLabels, datasets: [{ label: "กิจกรรม", data: actCounts, backgroundColor: ["#016FB7", "#0291e8", "#4da6e0", "#22c55e", "#f59e0b", "#8b5cf6"], borderRadius: 8 }] },
+                data: { labels: actLabels, datasets: [{ label: "กิจกรรม", data: actCounts, backgroundColor: ["#016FB7", "#0291e8", "#4da6e0", "#22c55e", "#f59e0b", "#8b5cf6", "#ef4444"], borderRadius: 8 }] },
                 options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { font: { size: 10 } } }, y: { beginAtZero: true, ticks: { stepSize: 1 } } }, maintainAspectRatio: false },
             });
 
