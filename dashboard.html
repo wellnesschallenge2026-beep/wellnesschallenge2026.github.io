@@ -168,6 +168,19 @@
                 </div>
             </div>
 
+            <!-- Superfit (Special) -->
+            <div class="activity-card superfit-card" onclick="openModal('superfit')">
+                <div class="activity-icon">🔥</div>
+                <div>
+                    <div class="activity-title" data-i18n="act_superfit">Superfit</div>
+                    <div class="activity-desc mt-1" data-i18n="act_superfit_desc">ไปให้สุดในเวอร์ชันที่ดีที่สุดของเรา</div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="activity-badge" style="background:var(--danger);color:white;border:none;">🔥 Top Tier</span>
+                    <button class="btn btn-primary btn-sm" data-i18n="dash_log_btn">บันทึก</button>
+                </div>
+            </div>
+
         </div><!-- /activity-grid -->
     </main>
 
@@ -327,6 +340,33 @@
         ${photoField()}
       `,
             },
+            superfit: {
+                icon: "🔥",
+                titleKey: "act_superfit",
+                fields: () => `
+        ${dateField()}
+        <div class="form-group">
+          <label class="form-label" data-i18n="form_sub_act">เลือกกิจกรรม</label>
+          <select class="form-select" name="superfitActivity" id="superfitActivitySelect" required onchange="handleSuperfitChange(this.value)">
+            <option value="" disabled selected data-i18n="form_sub_act">เลือกกิจกรรม</option>
+            <option value="No Fry" data-i18n="act_no_fry">No Fry, Let's Try!</option>
+            <option value="Running / Walking" data-i18n="act_running">Running & Walking</option>
+            <option value="Step Count" data-i18n="act_steps">Step Count</option>
+            <option value="Yoga & Aerobic" data-i18n="act_yoga">Yoga & Aerobic</option>
+            <option value="Football" data-i18n="act_football">Football</option>
+            <option value="Tennis" data-i18n="sub_tennis">เทนนิส</option>
+            <option value="Jump Rope" data-i18n="sub_jump_rope">กระโดดเชือก 250 ครั้ง</option>
+            <option value="Weight Training" data-i18n="sub_weight_training">Weight Training</option>
+            <option value="Less Meat" data-i18n="sub_less_meat">Less Meat</option>
+            <option value="Low Carb" data-i18n="sub_low_carb">Low Carb</option>
+            <option value="Other Exercise" data-i18n="sub_other_exercise">ออกกำลังกายอื่นๆ</option>
+            <option value="My Wellness Story" data-i18n="sub_my_wellness_story">My Wellness Story (เรื่องเล่าดีๆของฉัน)</option>
+          </select>
+        </div>
+        <div id="superfitFields"></div>
+        ${photoField()}
+      `,
+            },
         };
 
         // Field templates
@@ -422,6 +462,75 @@
                     <div class="form-group">
                         <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
                         <input class="form-input" type="number" name="duration" min="1" placeholder="นาที" required />
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            applyLang();
+        }
+
+        function handleSuperfitChange(val) {
+            const container = document.getElementById("superfitFields");
+            if (!container) return;
+
+            let html = "";
+            if (val === "No Fry" || val === "Less Meat" || val === "Low Carb") {
+                html = noteField();
+            } else if (val === "Running / Walking") {
+                html = `
+                    <div class="form-group">
+                      <label class="form-label" data-i18n="form_type">ประเภท</label>
+                      <select class="form-select" name="type" required>
+                        <option value="run" data-i18n="form_run">วิ่ง</option>
+                        <option value="walk" data-i18n="form_walk">เดิน</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_distance">ระยะทาง (km)</label>
+                        <input class="form-input" type="number" name="distance" step="0.01" min="0.1" placeholder="0.00" required />
+                    </div>
+                    ${timeField()}
+                    ${locationField()}
+                `;
+            } else if (val === "Step Count") {
+                html = `
+                    <div class="form-group">
+                      <label class="form-label" data-i18n="form_employee">ประเภทพนักงาน</label>
+                      <select class="form-select" name="employeeType" required>
+                        <option value="office" ${currentUser.employeeType === 'office' ? 'selected' : ''} data-i18n="form_office">Office</option>
+                        <option value="operation" ${currentUser.employeeType === 'operation' ? 'selected' : ''} data-i18n="form_operation">Operation</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_steps">จำนวนก้าว</label>
+                        <input class="form-input" type="number" name="steps" min="1" placeholder="0" required />
+                    </div>
+                    ${locationField()}
+                `;
+            } else if (["Yoga & Aerobic", "Football", "Tennis", "Jump Rope", "Weight Training"].includes(val)) {
+                html = `
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
+                        <input class="form-input" type="number" name="duration" min="1" placeholder="นาที" required />
+                    </div>
+                    ${timeField()}
+                `;
+            } else if (val === "Other Exercise") {
+                html = `
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_desc">รายละเอียด</label>
+                        <textarea class="form-textarea" name="description" placeholder="รายละเอียดการออกกำลังกาย" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_duration">ระยะเวลา (นาที)</label>
+                        <input class="form-input" type="number" name="duration" min="1" placeholder="นาที" required />
+                    </div>
+                `;
+            } else if (val === "My Wellness Story") {
+                html = `
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="form_desc">เรื่องเล่าดีๆของฉัน</label>
+                        <textarea class="form-textarea" name="description" placeholder="บอกเล่าเรื่องราวความประทับใจ หรือความเปลี่ยนแปลงของคุณ..." style="min-height: 120px;" required></textarea>
                     </div>
                 `;
             }
