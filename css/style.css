@@ -514,6 +514,37 @@ img {
   font-weight: 600;
 }
 
+/* ── Superfit Card (Special) ─────────────────────────────────── */
+@keyframes superfitPulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.superfit-card {
+  border: 2px solid var(--danger);
+  background: linear-gradient(145deg, var(--surface), #fff0f0);
+  animation: superfitPulse 2.5s infinite;
+}
+
+.superfit-card::before {
+  display: none;
+}
+
+.superfit-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(239, 68, 68, 0.2);
+}
+
+.superfit-card .activity-title {
+  color: var(--danger);
+}
+
+.superfit-card .activity-icon {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
 /* ── Progress Bar ───────────────────────────────────────────── */
 .progress-wrap {
   background: var(--bg);
