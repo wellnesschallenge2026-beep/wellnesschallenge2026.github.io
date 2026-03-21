@@ -198,6 +198,7 @@
         const ACT_LABELS = {
             no_fry: "🥗 No Fry", running: "🏃 Running", steps: "👟 Steps",
             yoga: "🧘 Yoga", football: "⚽ Football", my_design: "✨ My Design",
+            superfit: "🔥 Superfit",
         };
 
         document.getElementById("profileName").textContent = currentUser.fullName || currentUser.username;
@@ -248,7 +249,7 @@
                 document.getElementById("statWeek").textContent = weekLogs.length;
 
                 // Breakdown doughnut -> Bar
-                const actTypes = ["no_fry", "running", "steps", "yoga", "football", "my_design"];
+                const actTypes = ["no_fry", "running", "steps", "yoga", "football", "my_design", "superfit"];
                 const bdCounts = actTypes.map(a => logs.filter(l => l.activityType === a).length);
                 if (breakdownChart) breakdownChart.destroy();
                 breakdownChart = new Chart(document.getElementById("breakdownChart"), {
@@ -258,7 +259,7 @@
                         datasets: [{
                             label: "กิจกรรม",
                             data: bdCounts,
-                            backgroundColor: ["#016FB7", "#0291e8", "#4da6e0", "#22c55e", "#f59e0b", "#8b5cf6"],
+                            backgroundColor: ["#016FB7", "#0291e8", "#4da6e0", "#22c55e", "#f59e0b", "#8b5cf6", "#ef4444"],
                             borderRadius: 8,
                         }],
                     },
